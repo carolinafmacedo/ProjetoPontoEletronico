@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Ponto - Portaria</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet"> 
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            text-align: center;
+            background: #f4f4f4;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 60px;
+        }
+
+        .navbar {
+            width: 100%;
+            background: #1E3A8A;
+            padding: 15px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .navbar h2 {
+            margin: 0 auto;
+            font-size: 20px;
+        }
+
+        .home-btn {
+            background: white;
+            color: #1E3A8A;
+            padding: 8px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background 0.3s, transform 0.2s;
+            margin-right: 15px;
+        }
+
+        .home-btn:hover {
+            background: #ddd;
+            transform: scale(1.05);
+        }
+
+        h3 {
+            margin-top: 80px;
+            color: #333;
+        }
+
+        #funcionarios-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 800px;
+            margin-top: 20px;
+        }
+
+        .card {
+            background-color: #1E3A8A;
+            color: white;
+            padding: 15px;
+            margin: 10px;
+            cursor: pointer;
+            border-radius: 8px;
+            width: 220px;
+            text-align: center;
+            transition: background 0.3s, transform 0.2s;
+            font-size: 16px;
+        }
+
+        .card:hover {
+            background-color: #374BAD;
+            transform: scale(1.05);
+        }
+
+        .card:active {
+            background-color: #102A6D;
+            transform: scale(0.95);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <a href="index.html" class="home-btn">Home</a>
+        <h2>Registro de Ponto - Portaria</h2>
+    </div>
+
+    <h3>Funcionários na Portaria</h3>
+    <div id="funcionarios-container"></div>
+
+    <script>
+        async function carregarFuncionarios() {
+            const container = document.getElementById('funcionarios-container');
+
+            if (!container) {
+                console.error("Erro: Elemento 'funcionarios-container' não encontrado.");
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:8080/api/funcionario');
+                if (!response.ok) throw new Error(`Erro ao carregar funcionários: ${response.statusText}`);
+
+                const funcionarios = await response.json();
+                container.innerHTML = '';
+
+                funcionarios.forEach(funcionario => {
+                    const card = document.createElement('div');
+                    card.classList.add('card');
+                    card.innerHTML = `
+                        <strong>${funcionario.nome}</strong><br>
+                        ${funcionario.cargo}<br>
+                        <em>${funcionario.setor}</em>
+                    `;
+
+                    card.onclick = () => registrarPonto(funcionario.id);
+                    container.appendChild(card);
+                });
+            } catch (error) {
+                console.error(error);
+                alert("Erro ao carregar funcionários");
+            }
+        }
+
+        async function registrarPonto(funcionarioId) {
+            try {
+                const response = await fetch(`http://localhost:8080/api/registroPonto/${funcionarioId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Erro ao registrar ponto: ${errorText}`);
+                }
+
+                alert("Ponto registrado com sucesso!");
+            } catch (error) {
+                console.error(error);
+                alert(error.message);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("DOM carregado. Iniciando carregamento de funcionários...");
+            carregarFuncionarios();
+        });
+    </script>
+
+</body>
+</html>

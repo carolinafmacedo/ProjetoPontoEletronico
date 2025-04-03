@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Funcionário</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            position: relative;
+        }
+
+        .btn-home {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 10px 15px;
+            background-color: #555;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn-home:hover {
+            background-color: #777;
+        }
+
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        label {
+            font-size: 14px;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input {
+            width: calc(100% - 20px);
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            display: block;
+            margin: 0 auto;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #1E3A8A;
+            color: white;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #374BAD;
+        }
+
+        .message {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            display: none;
+        }
+
+        .success {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .error {
+            background-color: #D32F2F;
+            color: white;
+        }
+
+    </style>
+</head>
+<body>
+
+    <button class="btn-home" onclick="window.location.href='index.html'">🏠 Home</button>
+
+    <div class="container">
+        <h2>Cadastro de Funcionário</h2>
+        <form id="cadastroForm">
+            <div class="form-group">
+                <label for="nome">Nome:</label>
+                <input type="text" id="nome" name="nome" required>
+            </div>
+            <div class="form-group">
+                <label for="cargo">Cargo:</label>
+                <input type="text" id="cargo" name="cargo" required>
+            </div>
+            <div class="form-group">
+                <label for="setor">Setor:</label>
+                <input type="text" id="setor" name="setor" required>
+            </div>
+            <button type="submit">Cadastrar</button>
+        </form>
+
+        <div id="message" class="message"></div>
+    </div>
+
+    <script>
+        document.getElementById('cadastroForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const nome = document.getElementById('nome').value;
+            const cargo = document.getElementById('cargo').value;
+            const setor = document.getElementById('setor').value;
+
+            const payload = { nome, cargo, setor };
+
+            try {
+                const response = await fetch('http://localhost:8080/api/funcionario', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const messageDiv = document.getElementById('message');
+                if (response.ok) {
+                    messageDiv.textContent = "Funcionário cadastrado com sucesso!";
+                    messageDiv.className = "message success";
+                    document.getElementById('cadastroForm').reset();
+                } else {
+                    throw new Error("Erro ao cadastrar funcionário");
+                }
+                messageDiv.style.display = "block";
+
+            } catch (error) {
+                const messageDiv = document.getElementById('message');
+                messageDiv.textContent = "Erro ao cadastrar funcionário!";
+                messageDiv.className = "message error";
+                messageDiv.style.display = "block";
+            }
+        });
+    </script>
+
+</body>
+</html>
+
+
+

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciar Funcionários</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet"> 
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            text-align: center;
+            background: #f4f4f4;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 60px;
+        }
+
+        .navbar {
+            width: 100%;
+            background: #1E3A8A;
+            padding: 10px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+        }
+
+        .navbar h2 {
+            margin: 0 auto;
+        }
+
+        .home-btn {
+            background: white;
+            color: #1E3A8A;
+            padding: 8px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .home-btn:hover {
+            background: #ddd;
+        }
+
+        h3 {
+            margin-top: 80px;
+            color: #333;
+        }
+
+        #funcionarios-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .card {
+            background-color: #1E3A8A;
+            color: white;
+            padding: 15px;
+            margin: 10px;
+            cursor: pointer;
+            border-radius: 8px;
+            width: 220px;
+            text-align: center;
+            transition: background 0.3s, transform 0.2s;
+            font-size: 16px;
+        }
+
+        .card:hover {
+            background-color: #374BAD;
+            transform: scale(1.05);
+        }
+
+        .card:active {
+            background-color: #102A6D;
+            transform: scale(0.95);
+        }
+
+        #registros-container {
+            width: 90%;
+            max-width: 600px;
+            margin-top: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+
+        .registro {
+            background: #ddd;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <a href="index.html" class="home-btn">Home</a>
+        <h2>Gerenciar Funcionários</h2>
+    </div>
+
+    <h3>Funcionários Cadastrados</h3>
+    <div id="funcionarios-container"></div>
+
+    <div id="registros-container">
+        <h3 id="titulo-registros">Registros de Ponto</h3>
+        <div id="registros"></div>
+    </div>
+
+    <script>
+        async function carregarFuncionarios() {
+            const container = document.getElementById('funcionarios-container');
+
+            if (!container) {
+                console.error("Erro: Elemento 'funcionarios-container' não encontrado.");
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:8080/api/funcionario');
+                if (!response.ok) throw new Error(`Erro ao carregar funcionários: ${response.statusText}`);
+
+                const funcionarios = await response.json();
+                container.innerHTML = '';
+
+                funcionarios.forEach(funcionario => {
+                    const card = document.createElement('div');
+                    card.classList.add('card');
+                    card.innerHTML = `
+                        <strong>${funcionario.nome}</strong><br>
+                        ${funcionario.cargo}<br>
+                        <em>${funcionario.setor}</em>
+                    `;
+
+                    card.onclick = () => carregarRegistros(funcionario.id, funcionario.nome);
+                    container.appendChild(card);
+                });
+            } catch (error) {
+                console.error(error);
+                alert("Erro ao carregar funcionários");
+            }
+        }
+
+        async function carregarRegistros(funcionarioId, nomeFuncionario) {
+            try {
+                const response = await fetch(`http://localhost:8080/api/registroPonto/${funcionarioId}`);
+                if (!response.ok) throw new Error(`Erro ao carregar registros: ${response.statusText}`);
+
+                const registros = await response.json();
+                const registrosContainer = document.getElementById('registros');
+                const registrosBox = document.getElementById('registros-container');
+                const tituloRegistros = document.getElementById('titulo-registros');
+
+                registrosContainer.innerHTML = '';
+                tituloRegistros.textContent = `Registros de Ponto - ${nomeFuncionario}`;
+
+                if (registros.length === 0) {
+                    registrosContainer.innerHTML = "<p>Nenhum registro encontrado.</p>";
+                } else {
+                    registros.forEach(registro => {
+                        const div = document.createElement('div');
+                        div.classList.add('registro');
+                        div.textContent = `Data: ${new Date(registro.dataHora).toLocaleString('pt-BR')}`;
+                        registrosContainer.appendChild(div);
+                    });
+                }
+
+                registrosBox.style.display = "block";
+            } catch (error) {
+                console.error(error);
+                alert("Erro ao carregar registros");
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("DOM carregado. Iniciando carregamento de funcionários...");
+            carregarFuncionarios();
+        });
+    </script>
+
+</body>
+</html>
